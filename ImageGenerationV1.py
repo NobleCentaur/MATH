@@ -2,9 +2,8 @@ from PIL import Image
 import numpy as np
 import random
 
-imageWidth = 10
-imageHeight = 10
-currentItem = 0
+imageWidth = 100
+imageHeight = 100
 maxItem = imageHeight * imageWidth
 row = 0
 column = 0
@@ -33,16 +32,19 @@ def findLocation(Item, axis):
                 return(Item)    
 
 # Generates completely random image
-for i in range(0, maxItem):
-    image[findLocation(i, "x")][findLocation(i, "y")] = [random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255)]
+def noiseGeneration():
+    for i in range(0, maxItem):
+        image[findLocation(i, "x")][findLocation(i, "y")] = [random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255)]
 
-var1 = 10
-for i in range(0, imageWidth):
-    image[0][i] = [image[0][i] + (5*i), 0, 0]
+#def gradient(startColor, endColor):
+#    for i in range(0, imageWidth):
+#        if image[0][i][0] < 255:
+#            image[0][i] = [image[0][i][0] + (5*i), 0, 0]
+#    for i in range(0, imageHeight):
+#        image[i][0] = [image[i][0], 0, 0]
 
-var2 = image[0][1]
-for i in range(0, imageHeight):
-    image[i][0] = [image[i][0], 0, 0]
+#heeeee eheeeeeee comment goes here
+noiseGeneration()
 
 array = np.array(image, dtype=np.uint8)
 
