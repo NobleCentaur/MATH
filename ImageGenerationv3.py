@@ -5,6 +5,8 @@ import cmath
 
 imageWidth = 100
 imageHeight = 100
+maxIteration = 20
+imageShift = 0
 
 if imageHeight % 2 == 0:
     imageHeight =  imageHeight + 1
@@ -17,12 +19,20 @@ for x in range(0, imageHeight):
         array[x][i] = [255, 255, 255]
 
 def mandelbrotTest(C):
-    Z = [0]
-    for i in range(6):
-        Z.append(Z[-1] * Z[-1] + C)
-    print(Z)
+    Z = 0
+    n = 0
+    while abs(Z) <= 2 and n < maxIteration:
+        Z = Z * Z + C
+        n += 1
+    return(n)
 
-mandelbrotTest(-1+0.25j)
+def arrayToCoords(x, y):
+    centerX = ((imageWidth - 1) / 2) + 1
+    centerY = ((imageHeight - 1) / 2) + 1
+    
+    return()
+
+print(mandelbrotTest(-1+0.25j))
 
 array = array.astype('uint8')
 
