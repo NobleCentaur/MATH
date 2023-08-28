@@ -1,21 +1,17 @@
 from PIL import Image
 import numpy as np
 import random
-import cmath
 
-imageWidth = 100
-imageHeight = 100
+imageSize = 5
 maxIteration = 20
 imageShift = 0
 
-if imageHeight % 2 == 0:
-    imageHeight =  imageHeight + 1
-if imageWidth % 2 == 0:
-    imageWidth =  imageWidth + 1
+if imageSize % 2 == 0:
+    imageSize =  imageSize + 1
 
-array = np.zeros((imageWidth, imageHeight, 3), dtype=np.float64)
-for x in range(0, imageHeight):
-    for i in range(0, imageWidth):
+array = np.zeros((imageSize, imageSize, 3), dtype=np.float64)
+for x in range(0, imageSize):
+    for i in range(0, imageSize):
         array[x][i] = [255, 255, 255]
 
 def mandelbrotTest(C):
@@ -26,13 +22,24 @@ def mandelbrotTest(C):
         n += 1
     return(n)
 
-def arrayToCoords(x, y):
-    centerX = ((imageWidth - 1) / 2) + 1
-    centerY = ((imageHeight - 1) / 2) + 1
-    
-    return()
+# arrayToCoords before
+# [(0, 0) , (0, 1) , (0, 2) , (0, 3) , (0, 4)]
+# [(1, 0) , (1, 1) , (1, 2) , (1, 3) , (1, 4)]
+# [(2, 0) , (2, 1) , (2, 2) , (2, 3) , (2, 4)]
+# [(3, 0) , (3, 1) , (3, 2) , (3, 3) , (3, 4)]
+# [(4, 0) , (4, 1) , (4, 2) , (4, 3) , (4, 4)]
+# convert from locations on the coordinate plane to this
+# [(-2, 2) , (-1, 2) , (0, 1) , (1, 2) , (2, 2) ] 
+# [(-2, 1) , (-1, 1) , (0, 1) , (1, 1) , (2, 1) ]
+# [(-2, 0) , (-1, 0) , (0, 0) , (1, 0) , (2, 0) ]
+# [(-2, -1), (-1, -1), (0, -1), (1, -1), (2, -1)]
+# [(-2, -2), (-1, -2), (0, -2), (1, -2), (2, -2)]
 
-print(mandelbrotTest(-1+0.25j))
+#def coordsToArray(x, y):
+#    arrayOffset = (imageSize - 1) / 2  
+#    return(x, y)
+
+#print(coordsToArray(2, -2))
 
 array = array.astype('uint8')
 
