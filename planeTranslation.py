@@ -2,9 +2,6 @@ import numpy as np
 
 imageSize = 10
 array = np.zeros((imageSize, imageSize, 2), dtype=np.float64)
-array[3][1] = (-2, 2)
-array[1][2] = (2, -2)
-print(array)
 
 # arrayToCoords before
 # [(1, 1) , (1, 2) , (1, 3) , (1, 4) , (1, 5)]
@@ -19,9 +16,7 @@ print(array)
 # [(-2, -1), (-1, -1), (0, -1), (1, -1), (2, -1)]
 # [(-2, -2), (-1, -2), (0, -2), (1, -2), (2, -2)]
 
-print(np.maximum(array))
-
-def planeTranslation():
+def arrayPlaneTranslation():
     smallestX = 0
     largestY = 0
     for i in range(imageSize):
@@ -38,4 +33,9 @@ def planeTranslation():
             array[i][j][0] = array[i][j][0] + smallestX
             array[i][j][1] = abs(array[i][j][1] - largestY)
 
-planeTranslation()
+def planeTranslation(x, y):
+    x = x + imageSize
+    y = abs(y - imageSize)
+    return(x, y)
+
+print(planeTranslation(2, 2))
