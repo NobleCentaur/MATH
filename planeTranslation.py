@@ -37,9 +37,8 @@ def arrayPlaneTranslation():
             array[i][j][0] = array[i][j][0] + smallestX
             array[i][j][1] = abs(array[i][j][1] - largestY)
 
-def planeTranslation(x, y):
-    y = x + imageSize
-    x = abs(y - imageSize)
-    return(x, y)
-
-print(planeTranslation(2, 2))
+def coordsToArray(x, y):
+    arrayOffset = (imageSize - 1) / 2  
+    returnX = np.abs(y - arrayOffset)
+    returnY = x + arrayOffset
+    return(returnX, returnY)
