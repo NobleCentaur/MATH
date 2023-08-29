@@ -1,6 +1,10 @@
 import numpy as np
 
-imageSize = 10
+# IMPORTANT
+# only the array thing works
+# I figured it out in another document
+
+imageSize = 5
 array = np.zeros((imageSize, imageSize, 2), dtype=np.float64)
 
 # arrayToCoords before
@@ -34,8 +38,8 @@ def arrayPlaneTranslation():
             array[i][j][1] = abs(array[i][j][1] - largestY)
 
 def planeTranslation(x, y):
-    x = x + imageSize
-    y = abs(y - imageSize)
+    y = x + imageSize
+    x = abs(y - imageSize)
     return(x, y)
 
 print(planeTranslation(2, 2))
