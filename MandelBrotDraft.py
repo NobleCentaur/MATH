@@ -14,6 +14,7 @@ valueRange = 2.5
 startingPoint = (-2, 1.25)
 
 step = valueRange / (imageSize - 1)
+
 gradientStart = (255, 0, 0)
 gradientEnd = (5, 0, 0)
 gradientStep = np.zeros((1, 3), dtype=np.float32)
