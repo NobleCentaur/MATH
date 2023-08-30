@@ -40,3 +40,6 @@ def inSetInterpret():
 
 inSetInterpret()
 print(colorArray)
+
+new_image = Image.fromarray(colorArray)
+new_image.save('MandelbrotOptimized.png')
