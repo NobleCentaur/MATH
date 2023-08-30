@@ -1,10 +1,19 @@
 from PIL import Image
 import numpy as np
 from multiprocessing.pool import ThreadPool
+from timeit import default_timer as timer
 
-imageSize = 10000
-maxIteration = 10000
-step = 2.5 / (imageSize - 1)
+# Determines the image pixel width and length
+imageSize = int(input("Render Size : "))
+imageSharpness = int(input(f"Render Sharpness [1 - {imageSize}]: "))
+# Determines how precise the gradient is
+maxIteration = imageSize / imageSharpness
+# Default should be 2.5
+valueRange = 2.5
+# Default should be (-2, 1.25)
+startingPoint = (-2, 1.25)
+
+step = valueRange / (imageSize - 1)
 gradientStart = (255, 0, 0)
 gradientEnd = (5, 0, 0)
 gradientStep = np.zeros((1, 3), dtype=np.float32)
@@ -24,24 +33,31 @@ def mandelbrotTest(C):
     return(n)
 
 def mandelbrotRow(rowNum):
-    for a in range((rowNum), (rowNum + 1)):
-        for b in range(imageSize):
-            complexNum = complex((-2 + (b * step)), (1.25 - (a * step)))
-            mandelbrotNum = mandelbrotTest(complexNum)
-            if mandelbrotNum == maxIteration:
-                array[a][b] = (0, 0, 0)
-            if mandelbrotNum != maxIteration:
-                colorValue = gradientStart + (gradientStep * mandelbrotNum)
-                array[a][b] = colorValue
+    for b in range(imageSize):
+        complexNum = complex((startingPoint[0] + (b * step)), (startingPoint[1] - (rowNum * step)))
+        mandelbrotNum = mandelbrotTest(complexNum)
+        if mandelbrotNum == maxIteration:
+            array[rowNum][b] = (0, 0, 0)
+        if mandelbrotNum != maxIteration:
+            colorValue = gradientStart + (gradientStep * mandelbrotNum)
+            array[rowNum][b] = colorValue
 
 # variable with next working row
 # one thread that reads next working row and 
 
 if __name__=="__main__":
+    startTime = timer()
+    np.round(startTime, 3)
+
     with ThreadPool() as pool:
         pool.map(mandelbrotRow, range(imageSize))
         
     array = array.astype('uint8')
-
     new_image = Image.fromarray(array)
-    new_image.save('Image.png')
+    new_image.save('Mandelbrot.png')
+    
+    endTime = timer()
+    np.round(endTime, 3)
+    print("")
+    print(f"Finished! Took {endTime - startTime} seconds.")
+    print("")
