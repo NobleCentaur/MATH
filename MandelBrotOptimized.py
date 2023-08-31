@@ -1,6 +1,6 @@
 from PIL import Image
 import numpy as np
-from multiprocessing.pool import ThreadPool
+from concurrent.futures
 from timeit import default_timer as timer
 
 # Determines the image pixel width and length
@@ -19,12 +19,6 @@ inSetArray = np.zeros((imageSize, imageSize), dtype=np.float32)
 colorArray = np.zeros((imageSize, imageSize, 3), dtype=np.float32)
 colorArray[:] = 255
 
-print(inSetArray)
-inSetArray[0][1] = 1
-print("")
-print(inSetArray)
-print("")
-
 def mandelbrotTest(C): 
     Z = 0
     n = 0
@@ -38,8 +32,27 @@ def inSetInterpret():
         if inSetArray[idx] == 1:
             colorArray[idx] = (0, 0, 0)
 
-inSetInterpret()
-print(colorArray)
+def pointChecker(idx):
+    complexNum = complex((startingPoint[0] + (idx[1] * step)), (startingPoint[1] - (idx[0] * step)))
+    mandelbrotNum = mandelbrotTest(complexNum)
+    if mandelbrotNum == maxIteration:
+        inSetArray[idx] = 1
 
+startTime = timer()
+
+# https://www.youtube.com/watch?v=fKl2JW_qrso
+# very helpful video
+
+for idx, x in np.ndenumerate(inSetArray):
+    print("stuff needs to go here but I don't have anything")
+    # I need to pass idx into the lower function
+
+inSetInterpret()
+
+colorArray = colorArray.astype('uint8')
 new_image = Image.fromarray(colorArray)
 new_image.save('MandelbrotOptimized.png')
+
+endTime = timer()
+print("")
+print(f"Values computed. Took [{endTime - startTime}] seconds.")

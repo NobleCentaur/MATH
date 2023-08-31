@@ -39,16 +39,15 @@ def mandelbrotRow(rowNum):
         mandelbrotNum = mandelbrotTest(complexNum)
         if mandelbrotNum == maxIteration:
             array[rowNum][b] = (0, 0, 0)
-        if mandelbrotNum != maxIteration:
-            colorValue = gradientStart + (gradientStep * mandelbrotNum)
-            array[rowNum][b] = colorValue
+        #if mandelbrotNum != maxIteration:
+        #    colorValue = gradientStart + (gradientStep * mandelbrotNum)
+        #    array[rowNum][b] = colorValue
 
 # variable with next working row
 # one thread that reads next working row and 
 
 if __name__=="__main__":
     startTime = timer()
-    np.round(startTime, 3)
 
     with ThreadPool() as pool:
         pool.map(mandelbrotRow, range(imageSize))
@@ -58,7 +57,6 @@ if __name__=="__main__":
     new_image.save('Mandelbrot.png')
     
     endTime = timer()
-    np.round(endTime, 3)
     print("")
     print(f"Finished! Took {endTime - startTime} seconds.")
     print("")
