@@ -1,11 +1,11 @@
 from PIL import Image
 import numpy as np
-from concurrent.futures
+import multiprocessing
 from timeit import default_timer as timer
 
 # Determines the image pixel width and length
-imageSize = int(input("Render Size : "))
-imageSharpness = int(input(f"Render Sharpness [1 - {imageSize}]: "))
+imageSize = 10
+imageSharpness = 1
 # Determines how precise the gradient is
 maxIteration = imageSize / imageSharpness
 # Default should be 2.5
@@ -19,40 +19,52 @@ inSetArray = np.zeros((imageSize, imageSize), dtype=np.float32)
 colorArray = np.zeros((imageSize, imageSize, 3), dtype=np.float32)
 colorArray[:] = 255
 
-def mandelbrotTest(C): 
+#def mandelbrotTest(C): 
+#    Z = 0
+#    n = 0
+#    while abs(Z) <= 2 and n < maxIteration:
+#        Z = Z * Z + C
+#        n += 1
+#    return(n)
+
+def pointChecker(idx):
+    complexNum = complex((startingPoint[0] + (idx[1] * step)), (startingPoint[1] - (idx[0] * step)))
     Z = 0
     n = 0
     while abs(Z) <= 2 and n < maxIteration:
-        Z = Z * Z + C
+        Z = Z * Z + complexNum
         n += 1
-    return(n)
+    if n == maxIteration:
+        inSetArray[idx] = 1
 
-def inSetInterpret():
+if __name__ == "__main__":
+
+    startTime = timer()
+    coordinates = []
+    for x, _ in np.ndenumerate(inSetArray):
+        coordinates.append(x)
+
+    # https://www.youtube.com/watch?v=fKl2JW_qrso
+    # very helpful video
+
+    processes = []
+    for i in range(imageSize**2):
+        p = multiprocessing.Process(target=pointChecker, args=[coordinates[i]])
+        p.start()
+        processes.append(p)
+
+    for process in processes:
+        process.join()
+
+    #interprets 2d binary array to color array
     for idx, x in np.ndenumerate(inSetArray):
         if inSetArray[idx] == 1:
             colorArray[idx] = (0, 0, 0)
 
-def pointChecker(idx):
-    complexNum = complex((startingPoint[0] + (idx[1] * step)), (startingPoint[1] - (idx[0] * step)))
-    mandelbrotNum = mandelbrotTest(complexNum)
-    if mandelbrotNum == maxIteration:
-        inSetArray[idx] = 1
+    colorArray = colorArray.astype('uint8')
+    new_image = Image.fromarray(colorArray)
+    new_image.save('MandelbrotOptimized.png')
 
-startTime = timer()
-
-# https://www.youtube.com/watch?v=fKl2JW_qrso
-# very helpful video
-
-for idx, x in np.ndenumerate(inSetArray):
-    print("stuff needs to go here but I don't have anything")
-    # I need to pass idx into the lower function
-
-inSetInterpret()
-
-colorArray = colorArray.astype('uint8')
-new_image = Image.fromarray(colorArray)
-new_image.save('MandelbrotOptimized.png')
-
-endTime = timer()
-print("")
-print(f"Values computed. Took [{endTime - startTime}] seconds.")
+    endTime = timer()
+    print("")
+    print(f"Values computed. Took [{endTime - startTime}] seconds.")
