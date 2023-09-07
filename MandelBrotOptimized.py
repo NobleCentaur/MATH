@@ -34,8 +34,12 @@ def pointChecker(idx):
     while abs(Z) <= 2 and n < maxIteration:
         Z = Z * Z + complexNum
         n += 1
+    print(n)
     if n == maxIteration:
-        inSetArray[idx] = 1
+        print("YAY")
+        return(idx)
+    else:
+        return(0)
 
 if __name__ == "__main__":
 
