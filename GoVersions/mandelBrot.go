@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/color"
@@ -16,8 +17,8 @@ import (
 // ranges from 1 to the imageSize
 // lower values take longer to calculate
 // 5-10 is usually an acceptable balance between precision and speed
-var imageSize int = 1000
-var imageSharpness int = 1
+var imageSize int = 50000
+var imageSharpness int = 5
 
 // other important values
 var valueRange float64 = 2.5
@@ -31,7 +32,7 @@ var step float64 = valueRange / (float64(imageSize) - 1)
 func escapeTimeAlgorithm(c complex128) uint8 {
 	var z complex128
 	var n uint8
-	for i := 0; i < maxIteration && cmplx.Abs(z) < 2; i++ {
+	for i := 0; cmplx.Abs(z) < 2 && i < maxIteration; i++ {
 		z = z*z + c
 		n++
 	}
@@ -54,18 +55,19 @@ func main() {
 			escapeTimeTable[j][k] = escapeTimeAlgorithm(complexNum)
 		}
 	}
+
 	//gradient starting and ending rgb values
-	var startingRed float32 = 0
-	var startingGreen float32 = 0
-	var startingBlue float32 = 0
+	var startingRed float64 = 0
+	var startingGreen float64 = 0
+	var startingBlue float64 = 0
 
-	var endingRed float32 = 0
-	var endingGreen float32 = 255
-	var endingBlue float32 = 0
+	var endingRed float64 = 255
+	var endingGreen float64 = 255
+	var endingBlue float64 = 255
 
-	var clrRed float32
-	var clrBlue float32
-	var clrGreen float32
+	var clrRed float64
+	var clrBlue float64
+	var clrGreen float64
 
 	escapeHistogram := make([]uint8, maxIteration)
 	var varTemp uint8
@@ -75,7 +77,11 @@ func main() {
 			escapeHistogram[varTemp-1]++
 		}
 	}
-	fmt.Println(escapeHistogram)
+
+	//gradient adjustments
+	var dividendAdjusted float64
+	var count int = bytes.Count(escapeHistogram, []byte{0})
+	dividendAdjusted = float64(maxIteration) - float64(count)
 
 	//interprets the escape time table to an image
 	img := image.NewRGBA(image.Rect(0, 0, imageSize, imageSize))
@@ -85,9 +91,9 @@ func main() {
 			if escapeTime == uint8(maxIteration) {
 				img.Set(j, k, color.RGBA{0, 0, 0, 255})
 			} else {
-				clrRed = (startingRed + ((endingRed-startingRed)/float32(maxIteration))*float32(escapeTime))
-				clrBlue = (startingBlue + ((endingBlue-startingBlue)/float32(maxIteration))*float32(escapeTime))
-				clrGreen = (startingGreen + ((endingGreen-startingGreen)/float32(maxIteration))*float32(escapeTime))
+				clrRed = (startingRed + ((endingRed-startingRed)/dividendAdjusted)*float64(escapeTime))
+				clrBlue = (startingBlue + ((endingBlue-startingBlue)/dividendAdjusted)*float64(escapeTime))
+				clrGreen = (startingGreen + ((endingGreen-startingGreen)/dividendAdjusted)*float64(escapeTime))
 				img.Set(j, k, color.RGBA{uint8(clrRed), uint8(clrBlue), uint8(clrGreen), 255})
 			}
 		}
