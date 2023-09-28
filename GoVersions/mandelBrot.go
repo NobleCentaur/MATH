@@ -17,16 +17,16 @@ import (
 // ranges from 1 to the imageSize
 // lower values take longer to calculate
 // 5-10 is usually an acceptable balance between precision and speed
-var imageSize int = 5000
+var imageSize int
 var imageSharpness int = 1
 
 // other important values
 var valueRange float64 = 2.5
-var maxIteration int = imageSize / imageSharpness
+var maxIteration int
 var startingX float64 = -2
 var startingY float64 = 1.25
 var complexNum complex128
-var step float64 = valueRange / (float64(imageSize) - 1)
+var step float64
 
 // gradient starting and ending rgb values
 var startingRed float64 = 0
@@ -51,14 +51,23 @@ func escapeTimeAlgorithm(c complex128) uint8 {
 }
 
 // runs the escape time algorith for a given row and returns to a given channel
-func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8) {
+func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8, channel chan bool) {
 	for j := 0; j < imageSize; j++ {
 		complexNum = complex((startingX + (float64(j) * step)), (startingY - (float64(rowNum) * step)))
 		array[j][rowNum] = escapeTimeAlgorithm(complexNum)
 	}
+	channel <- true
 }
 
 func main() {
+
+	fmt.Print("Type a number: ")
+	fmt.Scan(&imageSize)
+	maxIteration = imageSize / imageSharpness
+	step = valueRange / (float64(imageSize) - 1)
+
+	ch := make(chan bool, imageSize/2)
+
 	//ensures that imageSize is even
 	if imageSize%2 != 0 {
 		imageSize += 1
@@ -76,8 +85,16 @@ func main() {
 	// multiprocessed version of the math
 	fmt.Println("start math")
 	for j := 0; j < imageSize/2; j++ {
-		go escapeTimeAlgorithmByRow(j, escapeTimeTable)
+		go escapeTimeAlgorithmByRow(j, escapeTimeTable, ch)
 	}
+
+	for j := 0; j < imageSize/2; j++ {
+		<-ch
+	}
+
+	duration := time.Since(start)
+	fmt.Println(duration)
+	fmt.Println("end math, start interpretation")
 
 	//copies top half to bottom half
 	for j := 0; j < imageSize; j++ {
@@ -85,10 +102,6 @@ func main() {
 			escapeTimeTable[j][imageSize/2+k] = escapeTimeTable[j][imageSize/2-k]
 		}
 	}
-
-	duration := time.Since(start)
-	fmt.Println(duration)
-	fmt.Println("end math, start interpretation")
 
 	//escape time color normalization
 	escapeHistogram := make([]uint8, maxIteration)
