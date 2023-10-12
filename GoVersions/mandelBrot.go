@@ -61,7 +61,7 @@ func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8, channel chan bool) {
 
 func main() {
 
-	fmt.Print("Type a number: ")
+	fmt.Print("Image Size: ")
 	fmt.Scan(&imageSize)
 	maxIteration = imageSize / imageSharpness
 	step = valueRange / (float64(imageSize) - 1)
@@ -88,6 +88,7 @@ func main() {
 		go escapeTimeAlgorithmByRow(j, escapeTimeTable, ch)
 	}
 
+	// joins all processes
 	for j := 0; j < imageSize/2; j++ {
 		<-ch
 	}
