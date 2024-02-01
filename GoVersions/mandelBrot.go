@@ -59,10 +59,8 @@ func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8, channel chan bool) {
 	channel <- true
 }
 
-func main() {
+func render() {
 
-	fmt.Print("Image Size: ")
-	fmt.Scan(&imageSize)
 	maxIteration = imageSize / imageSharpness
 	step = valueRange / (float64(imageSize) - 1)
 
@@ -144,4 +142,30 @@ func main() {
 	fmt.Println(duration)
 	//
 	fmt.Println("done")
+
+}
+
+func main() {
+
+	// COMMANDS LIST
+	// render - creates new render
+	// exit - exits program
+
+	var input string
+
+	for stop := false; !stop; {
+
+		fmt.Print(">")
+		fmt.Scan(&input)
+
+		if input == "render" {
+			fmt.Print("Image Size: ")
+			fmt.Scan(&imageSize)
+			render()
+		}
+		if input == "exit" {
+			stop = true
+		}
+	}
+
 }
