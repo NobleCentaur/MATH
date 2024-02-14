@@ -59,7 +59,19 @@ func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8, channel chan bool) {
 	channel <- true
 }
 
-func render() {
+func render(adv bool) {
+
+	//option to change default parameters manually
+	if adv {
+		fmt.Print("image sharpness     : ")
+		fmt.Scan(&imageSharpness)
+		fmt.Print("red value (0-255)   : ")
+		fmt.Scan(&endingRed)
+		fmt.Print("green value (0-255) : ")
+		fmt.Scan(&endingGreen)
+		fmt.Print("Blue value (0-255)  : ")
+		fmt.Scan(&endingBlue)
+	}
 
 	maxIteration = imageSize / imageSharpness
 	step = valueRange / (float64(imageSize) - 1)
@@ -105,8 +117,8 @@ func render() {
 	//escape time color normalization
 	escapeHistogram := make([]uint8, maxIteration)
 	var varTemp uint8
-	for j := 0; j < imageSize; j++ {
-		for k := 0; k < imageSize; k++ {
+	for j := 0; j < imageSize/imageSharpness; j++ {
+		for k := 0; k < imageSize/imageSharpness; k++ {
 			varTemp = escapeTimeTable[j][k]
 			escapeHistogram[varTemp-1]++
 		}
@@ -142,30 +154,6 @@ func render() {
 	fmt.Println(duration)
 	//
 	fmt.Println("done")
-
-}
-
-func main() {
-
-	// COMMANDS LIST
-	// render - creates new render
-	// exit - exits program
-
-	var input string
-
-	for stop := false; !stop; {
-
-		fmt.Print(">")
-		fmt.Scan(&input)
-
-		if input == "render" {
-			fmt.Print("Image Size: ")
-			fmt.Scan(&imageSize)
-			render()
-		}
-		if input == "exit" {
-			stop = true
-		}
-	}
+	fmt.Println("")
 
 }

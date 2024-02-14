@@ -1,0 +1,18 @@
+Steps to spread processes across multiple devices
+
+1. establish a connection from master node to worker nodes
+    a. workers start by listening for incoming connections
+    b. main attempts to connect to listening worker node
+    c. sends initial message for verification
+    d. worker responds with same key (or differnet if we're feeling secure)
+2. communicate parameters to all workers
+    a. imageSize
+    b. startingX
+    c. startingY
+    b. valuerange
+        ba. need to compute step value from these
+3. distribute row responsibility to every worker node
+    a. start a new goroutine for each worker node on main
+        aa. pick from a list of available rows to compute
+        ab. send that row to the worker node
+        ac. wait for response from worker
