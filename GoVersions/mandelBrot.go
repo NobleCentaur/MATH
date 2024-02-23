@@ -60,6 +60,10 @@ func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8, channel chan bool) {
 }
 
 func render(adv bool) {
+	//ensures that imageSize is even
+	if imageSize%2 != 0 {
+		imageSize += 1
+	}
 
 	//option to change default parameters manually
 	if adv {
@@ -77,11 +81,6 @@ func render(adv bool) {
 	step = valueRange / (float64(imageSize) - 1)
 
 	ch := make(chan bool, imageSize/2)
-
-	//ensures that imageSize is even
-	if imageSize%2 != 0 {
-		imageSize += 1
-	}
 
 	//creates blank 2d array with width and heighth of imageSize
 	escapeTimeTable := make([][]uint8, imageSize)

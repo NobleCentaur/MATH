@@ -52,6 +52,8 @@ func networkMain() {
 			if len(workerList) < 1 {
 				fmt.Println("There are no workers currently added.")
 			}
+		} else if input == "Render" {
+			networkRender()
 		} else {
 			fmt.Println("Not a recognized command.")
 		}
@@ -108,7 +110,26 @@ func networkWorker() {
 		fmt.Println(step_local)
 
 		for stopNested := false; !stopNested; {
-			stopNested = true
+
 		}
 	}
+}
+
+func networkRender() {
+	fmt.Println("")
+	fmt.Print("image Size (min 256): ")
+	fmt.Scan(&imageSize)
+	maxIteration = imageSize / imageSharpness
+	step = valueRange / (float64(imageSize) - 1)
+
+	for i := 0; i < len(workerList); i++ {
+		go workerHandler(workerList[i])
+		fmt.Println("Process spawned for [" + workerList[i] + "]")
+	}
+
+}
+
+func workerHandler(worker string) {
+	conn, err := net.Dial("tcp", worker+"8080")
+
 }
