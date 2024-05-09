@@ -27,6 +27,8 @@ func addWorker() {
 	if Float64frombytes(buf) == Float64frombytes(key) {
 		workerList = append(workerList, input)
 		fmt.Println("Connection successful, [" + input + "] added to worker list")
+	} else {
+		networkMain()
 	}
 }
 
@@ -80,7 +82,13 @@ func networkWorker() {
 	for stop := false; !stop; {
 		ln, err = net.Listen("tcp", ":8080")
 		errHandler(err)
-		conn, err = ln.Accept()
+
+		for i := 0; i < 1000; i++ {
+			fmt.Print("8=======D, ")
+		}
+
+		conn, err := ln.Accept()
+
 		errHandler(err)
 		defer conn.Close()
 
@@ -130,6 +138,6 @@ func networkRender() {
 }
 
 func workerHandler(worker string) {
-	conn, err := net.Dial("tcp", worker+"8080")
+	// conn, err := net.Dial("tcp", worker+"8080")
 
 }

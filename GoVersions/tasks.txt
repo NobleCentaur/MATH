@@ -15,4 +15,4 @@ Steps to spread processes across multiple devices
     a. start a new goroutine for each worker node on main
         aa. pick from a list of available rows to compute
         ab. send that row to the worker node
-        ac. wait for response from worker
+        ac. wait for response from worker0
