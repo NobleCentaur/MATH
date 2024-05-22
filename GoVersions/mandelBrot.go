@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"math/cmplx"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -59,6 +60,15 @@ func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8, channel chan bool) {
 	channel <- true
 }
 
+// give it a percent and it will show a progress bar displaying that percent
+func progressBar(percent int, percentReal float64) {
+	fmt.Print("\r[")
+	fmt.Print(strings.Repeat("#", percent/2))
+	fmt.Print(strings.Repeat("-", 50-(percent/2)))
+	fmt.Print("] ")
+	fmt.Printf(fmt.Sprint(percentReal) + "%")
+}
+
 func render(adv bool) {
 	//ensures that imageSize is even
 	if imageSize%2 != 0 {
@@ -97,10 +107,16 @@ func render(adv bool) {
 		go escapeTimeAlgorithmByRow(j, escapeTimeTable, ch)
 	}
 
+	fmt.Println("")
 	// joins all processes
+	var percent float64
 	for j := 0; j < imageSize/2; j++ {
+		percent = (float64(j+1) / (float64(imageSize) / 2)) * 100
+		progressBar(int(percent), percent)
 		<-ch
 	}
+	fmt.Println("")
+	fmt.Println("")
 
 	duration := time.Since(start)
 	fmt.Println(duration)
