@@ -61,12 +61,12 @@ func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8, channel chan bool) {
 }
 
 // give it a percent and it will show a progress bar displaying that percent
-func progressBar(percent int, percentReal float64) {
+func progressBar(percent int) {
 	fmt.Print("\r[")
 	fmt.Print(strings.Repeat("#", percent/2))
 	fmt.Print(strings.Repeat("-", 50-(percent/2)))
 	fmt.Print("] ")
-	fmt.Printf(fmt.Sprint(percentReal) + "%")
+	fmt.Print(fmt.Sprint(percent) + "%")
 }
 
 func render(adv bool) {
@@ -110,9 +110,10 @@ func render(adv bool) {
 	fmt.Println("")
 	// joins all processes
 	var percent float64
+	print("[--------------------------------------------------] 0%")
 	for j := 0; j < imageSize/2; j++ {
-		percent = (float64(j+1) / (float64(imageSize) / 2)) * 100
-		progressBar(int(percent), percent)
+		percent = ((float64(j+1) / (float64(imageSize) / 2)) * 100)
+		progressBar(int(percent))
 		<-ch
 	}
 	fmt.Println("")
