@@ -33,6 +33,9 @@ func main() {
 			networkMain()
 		} else if input == "networkWorker" {
 			networkWorker()
+		} else if input == "writetest" {
+			arrayTest := []int{2, 4, 6, 7}
+			writeTest("escapeTable/file.csv", arrayTest)
 		} else {
 			fmt.Println("Not a recognized command.")
 		}

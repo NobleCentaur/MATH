@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"net"
 	"time"
 )
@@ -134,18 +135,20 @@ func networkWorker() {
 
 func networkRender() {
 	fmt.Println("")
-	fmt.Print("image Size (min 256): ")
+	fmt.Print("image size [Multiple of 500]: ")
 	fmt.Scan(&imageSize)
-	if imageSize%2 != 0 {
-		imageSize += 1
-	}
+
+	// Makes imageSize a multiple of 500
+	varTemp := imageSize / 500
+	imageSize = int((math.Round(float64(varTemp))) * 500)
+
 	areYouSure := "n"
 	for areYouSure != "y" {
 		fmt.Print("Allowed memory usage (MB): ")
 		fmt.Scan(&memCapacity)
 		fmt.Println("Using " + fmt.Sprint(memCapacity) + " MB of memory")
 		fmt.Println("[ATTENTION] Using more ram than you device has will crash it.")
-		fmt.Print("Are you sure (y/n)")
+		fmt.Print("Are you sure (y/n) ")
 		fmt.Scan(&areYouSure)
 	}
 

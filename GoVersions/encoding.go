@@ -17,3 +17,7 @@ func Float64bytes(float float64) []byte {
 	binary.LittleEndian.PutUint64(bytes, bits)
 	return bytes
 }
+
+func writeTest(filepath string, values []interface{}) error {
+
+}
