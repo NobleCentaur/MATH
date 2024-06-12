@@ -1,1 +1,1 @@
-MandelBrotDraft.py is the best version of the python program. MandelBrotOptimized.py is actually worse and is not a completed project.
+For rendering the Mandelbrot set at extremely high resoulions. In progress.
