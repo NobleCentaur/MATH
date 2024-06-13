@@ -16,7 +16,9 @@ var memCapacity int
 var startingX_local float64
 var startingY_local float64
 var step_local float64
-var imageSize_local float64
+var imageSize_local uint64
+
+var payload []byte
 
 func addWorker() {
 	fmt.Print("worker node ip: ")
@@ -59,7 +61,7 @@ func readContinuous(ch chan []byte, eCh chan error, connection net.Conn) {
 }
 
 // waits until conn.read actually includes data then sends it to ch channel
-func waitingRead(connection net.Conn, timeout int) (float64, error) {
+func waitingRead(connection net.Conn, timeout int) ([]byte, error) {
 	ch := make(chan []byte)
 	eCh := make(chan error)
 
@@ -69,11 +71,11 @@ func waitingRead(connection net.Conn, timeout int) (float64, error) {
 	for {
 		select {
 		case data := <-ch:
-			return Float64frombytes(data), nil
+			return data, nil
 		case err := <-eCh:
 			fmt.Println(err)
 		case <-ticker:
-			return 0, net.ErrClosed
+			return nil, net.ErrClosed
 		}
 	}
 }
@@ -93,7 +95,7 @@ func networkMain() {
 			if len(workerList) < 1 {
 				fmt.Println("There are no workers currently added.")
 			}
-		} else if input == "Render" {
+		} else if input == "render" {
 			networkRender()
 		} else {
 			fmt.Println("Not a recognized command.")
@@ -116,21 +118,38 @@ func networkWorker() {
 		conn.Write(key)
 	}
 
-	fmt.Println(waitingRead(conn, 1800))
+	payload, err = waitingRead(conn, 1800)
+	errHandler(err)
+	fmt.Println(payload)
 
-	time.Sleep(60 * time.Second)
-
-	//imageSize_local
-	//startingX_local
-	//startingY_local
-	//step_local
+	payload, err = waitingRead(conn, 3)
+	errHandler(err)
+	imageSize_local = uint64frombytes(payload)
 	fmt.Println(imageSize_local)
-	fmt.Print(startingX_local)
-	fmt.Println(startingY_local)
-	fmt.Println(step_local)
-	for stopNested := false; !stopNested; {
+	fmt.Println("---------")
 
-	}
+	payload, err = waitingRead(conn, 3)
+	errHandler(err)
+	startingX_local = Float64frombytes(payload)
+	fmt.Println(startingX_local)
+	fmt.Println("---------")
+
+	payload, err = waitingRead(conn, 3)
+	errHandler(err)
+	startingY_local = Float64frombytes(payload)
+	fmt.Println(startingY_local)
+	fmt.Println("---------")
+
+	payload, err = waitingRead(conn, 3)
+	errHandler(err)
+	step_local = Float64frombytes(payload)
+	fmt.Println(step_local)
+	fmt.Println("---------")
+
+	payload, err = waitingRead(conn, 3)
+	// row := uint64frombytes(payload)
+	errHandler(err)
+	fmt.Println("---------")
 }
 
 func networkRender() {
@@ -155,14 +174,36 @@ func networkRender() {
 	maxIteration = imageSize / imageSharpness
 	step = valueRange / (float64(imageSize) - 1)
 
+	rowList := make([]bool, imageSize)
 	for i := 0; i < len(workerList); i++ {
-		go workerHandler(workerList[i])
-		fmt.Println("Process spawned for Worker" + string(i))
+		go workerHandler(workerList[i], rowList)
+		fmt.Println("Process spawned for Worker" + fmt.Sprint(i))
 	}
 
 }
 
-func workerHandler(worker net.Conn) {
-	worker.Write(Float64bytes(float64(imageSize)))
+func workerHandler(worker net.Conn, rowList []bool) {
+	worker.Write(key)
 
+	worker.Write(uint64bytes(uint64(imageSize)))
+	time.Sleep(100 * time.Millisecond)
+	worker.Write(Float64bytes(startingX))
+	time.Sleep(100 * time.Millisecond)
+	worker.Write(Float64bytes(startingY))
+	time.Sleep(100 * time.Millisecond)
+	worker.Write(Float64bytes(step))
+	time.Sleep(100 * time.Millisecond)
+
+	rowToAssign := 0
+	for i := 0; rowList[i]; i++ {
+		rowToAssign = i + 1
+	}
+	rowList[rowToAssign] = true
+	fmt.Println("8===========D")
+	worker.Write(uint64bytes(uint64(rowToAssign)))
+	time.Sleep(100 * time.Millisecond)
+	worker.Write(uint64bytes(uint64(rowToAssign)))
+	time.Sleep(100 * time.Millisecond)
+	worker.Write(uint64bytes(uint64(rowToAssign)))
+	time.Sleep(100 * time.Millisecond)
 }

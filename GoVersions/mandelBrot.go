@@ -41,9 +41,9 @@ var clrBlue float64
 var clrGreen float64
 
 // simple, unoptimized escape time algorithm
-func escapeTimeAlgorithm(c complex128) uint8 {
+func escapeTimeAlgorithm(c complex128) uint64 {
 	var z complex128
-	var n uint8
+	var n uint64
 	for i := 0; cmplx.Abs(z) < 2 && i < maxIteration; i++ {
 		z = z*z + c
 		n++
@@ -52,7 +52,7 @@ func escapeTimeAlgorithm(c complex128) uint8 {
 }
 
 // runs the escape time algorith for a given row and returns to a given channel
-func escapeTimeAlgorithmByRow(rowNum int, array [][]uint8, channel chan bool) {
+func escapeTimeAlgorithmByRow(rowNum int, array [][]uint64, channel chan bool) {
 	for j := 0; j < imageSize; j++ {
 		complexNum = complex((startingX + (float64(j) * step)), (startingY - (float64(rowNum) * step)))
 		array[j][rowNum] = escapeTimeAlgorithm(complexNum)
@@ -93,20 +93,20 @@ func render(adv bool) {
 	ch := make(chan bool, imageSize/2)
 
 	//creates blank 2d array with width and heighth of imageSize
-	escapeTimeTable := make([][]uint8, imageSize)
+	escapeTimeTable := make([][]uint64, imageSize)
 	for i := range escapeTimeTable {
-		escapeTimeTable[i] = make([]uint8, imageSize)
+		escapeTimeTable[i] = make([]uint64, imageSize)
 	}
 
 	//time check
 	start := time.Now()
 
 	// multiprocessed version of the math
-	fmt.Println("start math")
+	fmt.Println("spawning processes")
 	for j := 0; j < imageSize/2; j++ {
 		go escapeTimeAlgorithmByRow(j, escapeTimeTable, ch)
 	}
-
+	fmt.Println("calculating...")
 	fmt.Println("")
 	// joins all processes
 	var percent float64
@@ -135,13 +135,14 @@ func render(adv bool) {
 	var varTemp uint8
 	for j := 0; j < imageSize/imageSharpness; j++ {
 		for k := 0; k < imageSize/imageSharpness; k++ {
-			varTemp = escapeTimeTable[j][k]
+			varTemp = uint8(escapeTimeTable[j][k])
 			escapeHistogram[varTemp-1]++
 		}
 	}
 
 	//gradient adjustments
 	var dividendAdjusted float64
+	fmt.Println(escapeHistogram)
 	var count int = bytes.Count(escapeHistogram, []byte{0})
 	dividendAdjusted = float64(maxIteration) - float64(count)
 
@@ -150,7 +151,7 @@ func render(adv bool) {
 	for j := 0; j < imageSize; j++ {
 		for k := 0; k < imageSize; k++ {
 			var escapeTime = escapeTimeTable[j][k]
-			if escapeTime == uint8(maxIteration) {
+			if escapeTime == uint64(maxIteration) {
 				img.Set(j, k, color.RGBA{0, 0, 0, 255})
 			} else {
 				clrRed = (startingRed + ((endingRed-startingRed)/dividendAdjusted)*float64(escapeTime))

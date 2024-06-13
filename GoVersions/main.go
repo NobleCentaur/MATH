@@ -29,13 +29,10 @@ func main() {
 			render(true)
 		} else if input == "exit" {
 			stop = true
-		} else if input == "networkMain" {
+		} else if input == "main" {
 			networkMain()
-		} else if input == "networkWorker" {
+		} else if input == "worker" {
 			networkWorker()
-		} else if input == "writetest" {
-			arrayTest := []int{2, 4, 6, 7}
-			writeTest("escapeTable/file.csv", arrayTest)
 		} else {
 			fmt.Println("Not a recognized command.")
 		}
