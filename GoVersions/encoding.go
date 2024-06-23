@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math"
+	"time"
 )
 
 func Float64frombytes(bytes []byte) float64 {
@@ -26,6 +28,11 @@ func uint64bytes(value uint64) []byte {
 	bytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(bytes, value)
 	return bytes
+}
+
+func runtimeBuster() {
+	fmt.Println("8=========D")
+	time.Sleep(1 * time.Second)
 }
 
 // func encodingTest() {

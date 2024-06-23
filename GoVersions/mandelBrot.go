@@ -1,16 +1,19 @@
 package main
 
 import (
-	"bytes"
+	"encoding/csv"
 	"fmt"
 	"image"
 	"image/color"
 	"image/png"
+	"math"
 	"math/cmplx"
 	"os"
 	"strings"
 	"time"
 )
+
+const pi float64 = 3.141592653589793115997963468544185161590576171875
 
 // Image parameters
 // imageSize is the width and height in pixels, min 256
@@ -29,16 +32,13 @@ var startingY float64 = 1.25
 var complexNum complex128
 var step float64
 
-// gradient starting and ending rgb values
-var startingRed float64 = 0
-var startingGreen float64 = 0
-var startingBlue float64 = 0
-var endingRed float64 = 255
-var endingGreen float64 = 0
-var endingBlue float64 = 0
-var clrRed float64
-var clrBlue float64
-var clrGreen float64
+// coloring variables
+var clr1 float64
+var clr2 float64
+var clr3 float64
+var escapeTime float64
+var gradientScale float64 = 0.1
+var varTempFloat64 float64
 
 // simple, unoptimized escape time algorithm
 func escapeTimeAlgorithm(c complex128) uint64 {
@@ -75,19 +75,13 @@ func render(adv bool) {
 		imageSize += 1
 	}
 
+	maxIteration = imageSize / imageSharpness
 	//option to change default parameters manually
 	if adv {
-		fmt.Print("image sharpness     : ")
-		fmt.Scan(&imageSharpness)
-		fmt.Print("red value (0-255)   : ")
-		fmt.Scan(&endingRed)
-		fmt.Print("green value (0-255) : ")
-		fmt.Scan(&endingGreen)
-		fmt.Print("Blue value (0-255)  : ")
-		fmt.Scan(&endingBlue)
+		fmt.Print("gradientScale     :")
+		fmt.Scan(&gradientScale)
 	}
 
-	maxIteration = imageSize / imageSharpness
 	step = valueRange / (float64(imageSize) - 1)
 
 	ch := make(chan bool, imageSize/2)
@@ -131,46 +125,74 @@ func render(adv bool) {
 	}
 
 	//escape time color normalization
-	escapeHistogram := make([]uint8, maxIteration)
-	var varTemp uint8
-	for j := 0; j < imageSize/imageSharpness; j++ {
-		for k := 0; k < imageSize/imageSharpness; k++ {
-			varTemp = uint8(escapeTimeTable[j][k])
-			escapeHistogram[varTemp-1]++
+	escapeHistogram := make([]uint64, maxIteration)
+	var varTempUint64 uint64
+	for j := 0; j < maxIteration; j++ {
+		for k := 0; k < maxIteration/2; k++ {
+			varTempUint64 = escapeTimeTable[j][k]
+			escapeHistogram[varTempUint64-1]++
 		}
 	}
 
-	//gradient adjustments
-	var dividendAdjusted float64
-	fmt.Println(escapeHistogram)
-	var count int = bytes.Count(escapeHistogram, []byte{0})
-	dividendAdjusted = float64(maxIteration) - float64(count)
-
-	//interprets the escape time table to an image
+	// MUCH improved coloration algorithm
+	// https://www.desmos.com/calculator/gmbe5ekk3z
+	// desmos project shows the math behind it so you
+	// don't have to read this gross spaghetti code
 	img := image.NewRGBA(image.Rect(0, 0, imageSize, imageSize))
 	for j := 0; j < imageSize; j++ {
 		for k := 0; k < imageSize; k++ {
-			var escapeTime = escapeTimeTable[j][k]
-			if escapeTime == uint64(maxIteration) {
+			escapeTime = float64(escapeTimeTable[j][k])
+			if escapeTime == float64(maxIteration) {
 				img.Set(j, k, color.RGBA{0, 0, 0, 255})
 			} else {
-				clrRed = (startingRed + ((endingRed-startingRed)/dividendAdjusted)*float64(escapeTime))
-				clrBlue = (startingBlue + ((endingBlue-startingBlue)/dividendAdjusted)*float64(escapeTime))
-				clrGreen = (startingGreen + ((endingGreen-startingGreen)/dividendAdjusted)*float64(escapeTime))
-				img.Set(j, k, color.RGBA{uint8(clrRed), uint8(clrBlue), uint8(clrGreen), 255})
+				varTempFloat64 = (gradientScale * escapeTime)
+				clr1 = 255 * ((math.Sin(varTempFloat64) + 1) / 2)
+				varTempFloat64 = gradientScale * (escapeTime + ((2 * pi) / (3 * gradientScale)))
+				clr2 = 255 * ((math.Sin(varTempFloat64) + 1) / 2)
+				varTempFloat64 = gradientScale * (escapeTime + ((4 * pi) / (3 * gradientScale)))
+				clr3 = 255 * ((math.Sin(varTempFloat64) + 1) / 2)
+				img.Set(j, k, color.RGBA{uint8(clr2), uint8(clr1), uint8(clr3), 255})
 			}
 		}
 	}
 
 	//renders the image
-	f, _ := os.OpenFile("output.png", os.O_WRONLY|os.O_CREATE, 0600)
-	defer f.Close()
-	png.Encode(f, img)
+	f1, err := os.OpenFile("renders/output.png", os.O_WRONLY|os.O_CREATE, 0600)
+	errHandler(err)
+	defer f1.Close()
+	png.Encode(f1, img)
 	//time check
 	duration = time.Since(start)
 	fmt.Println(duration)
 	//
 	fmt.Println("done")
 	fmt.Println("")
+
+	// Exports escape histogram to CSV
+	f2, err := os.Create("data/escapeHistogram.csv")
+	errHandler(err)
+	defer f2.Close()
+	csvWrite1 := csv.NewWriter(f2)
+	escapeHistogramString := make([]string, len(escapeHistogram))
+	for i := 0; i < len(escapeHistogram); i++ {
+		escapeHistogramString[i] = fmt.Sprint(escapeHistogram[i])
+	}
+	csvWrite1.Write(escapeHistogramString)
+
+	//exports escape time table to csv
+	f3, _ := os.Create("data/escapeTimeTable.csv")
+	errHandler(err)
+	defer f3.Close()
+	csvWrite2 := csv.NewWriter(f3)
+	escapeTimeTableString := make([][]string, imageSize)
+	for i := range escapeTimeTable {
+		escapeTimeTableString[i] = make([]string, imageSize)
+	}
+	for i := 0; i < imageSize; i++ {
+		for j := 0; j < imageSize; j++ {
+			escapeTimeTableString[i][j] = fmt.Sprint(escapeTimeTable[i][j])
+		}
+	}
+	csvWrite2.WriteAll(escapeTimeTableString)
 
 }
