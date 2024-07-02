@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"image"
 	"image/color"
@@ -78,8 +77,14 @@ func render(adv bool) {
 	maxIteration = imageSize / imageSharpness
 	//option to change default parameters manually
 	if adv {
-		fmt.Print("gradientScale     :")
+		fmt.Print("gradientScale       :")
 		fmt.Scan(&gradientScale)
+		fmt.Print("valueRange          :")
+		fmt.Scan(&valueRange)
+		fmt.Print("startingX           :")
+		fmt.Scan(&startingX)
+		fmt.Print("startingY           :")
+		fmt.Scan(&startingY)
 	}
 
 	step = valueRange / (float64(imageSize) - 1)
@@ -95,9 +100,15 @@ func render(adv bool) {
 	//time check
 	start := time.Now()
 
+	var calcRange int
 	// multiprocessed version of the math
+	if valueRange == 2.5 && startingX == -2 && startingY == 1.25 {
+		calcRange = imageSize / 2
+	} else {
+		calcRange = imageSize
+	}
 	fmt.Println("spawning processes")
-	for j := 0; j < imageSize/2; j++ {
+	for j := 0; j < calcRange; j++ {
 		go escapeTimeAlgorithmByRow(j, escapeTimeTable, ch)
 	}
 	fmt.Println("calculating...")
@@ -105,8 +116,8 @@ func render(adv bool) {
 	// joins all processes
 	var percent float64
 	print("[--------------------------------------------------] 0%")
-	for j := 0; j < imageSize/2; j++ {
-		percent = ((float64(j+1) / (float64(imageSize) / 2)) * 100)
+	for j := 0; j < calcRange; j++ {
+		percent = ((float64(j+1) / (float64(calcRange))) * 100)
 		progressBar(int(percent))
 		<-ch
 	}
@@ -118,19 +129,11 @@ func render(adv bool) {
 	fmt.Println("end math, start interpretation")
 
 	//copies top half to bottom half
-	for j := 0; j < imageSize; j++ {
-		for k := 0; k < imageSize/2; k++ {
-			escapeTimeTable[j][imageSize/2+k] = escapeTimeTable[j][imageSize/2-k]
-		}
-	}
-
-	//escape time color normalization
-	escapeHistogram := make([]uint64, maxIteration)
-	var varTempUint64 uint64
-	for j := 0; j < maxIteration; j++ {
-		for k := 0; k < maxIteration/2; k++ {
-			varTempUint64 = escapeTimeTable[j][k]
-			escapeHistogram[varTempUint64-1]++
+	if calcRange != imageSize {
+		for j := 0; j < imageSize; j++ {
+			for k := 0; k < imageSize/2; k++ {
+				escapeTimeTable[j][imageSize/2+k] = escapeTimeTable[j][imageSize/2-k]
+			}
 		}
 	}
 
@@ -167,32 +170,4 @@ func render(adv bool) {
 	//
 	fmt.Println("done")
 	fmt.Println("")
-
-	// Exports escape histogram to CSV
-	f2, err := os.Create("data/escapeHistogram.csv")
-	errHandler(err)
-	defer f2.Close()
-	csvWrite1 := csv.NewWriter(f2)
-	escapeHistogramString := make([]string, len(escapeHistogram))
-	for i := 0; i < len(escapeHistogram); i++ {
-		escapeHistogramString[i] = fmt.Sprint(escapeHistogram[i])
-	}
-	csvWrite1.Write(escapeHistogramString)
-
-	//exports escape time table to csv
-	f3, _ := os.Create("data/escapeTimeTable.csv")
-	errHandler(err)
-	defer f3.Close()
-	csvWrite2 := csv.NewWriter(f3)
-	escapeTimeTableString := make([][]string, imageSize)
-	for i := range escapeTimeTable {
-		escapeTimeTableString[i] = make([]string, imageSize)
-	}
-	for i := 0; i < imageSize; i++ {
-		for j := 0; j < imageSize; j++ {
-			escapeTimeTableString[i][j] = fmt.Sprint(escapeTimeTable[i][j])
-		}
-	}
-	csvWrite2.WriteAll(escapeTimeTableString)
-
 }
