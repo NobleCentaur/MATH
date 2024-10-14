@@ -31,7 +31,7 @@ func uint64bytes(value uint64) []byte {
 }
 
 func runtimeBuster() {
-	fmt.Println("8=========D")
+	fmt.Println("[PAUSE]")
 	time.Sleep(1 * time.Second)
 }
 
